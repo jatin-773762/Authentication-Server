@@ -3,9 +3,8 @@ const User = require('../models/userSchema');
 
 const updateController = (req,res)=>{
 
-    const {token, user, password} = req.body;
-
-    const{ id } = jwt.decode(token);
+    const {user, password} = req.body;
+    
     
 
 }

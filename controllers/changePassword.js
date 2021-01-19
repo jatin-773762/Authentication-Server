@@ -1,29 +1,26 @@
 const User = require('../models/userSchema');
 const jwt = require('jsonwebtoken');
 const {validationResult} = require('express-validator');
+const { use } = require('../routes/authRoute');
 
-const registerController = (req,res)=>{
-    const {email,name,password} = req.body;
-    // console.log(email);
+const changePassword = (req,res)=>{
+
+    const{email,password,newPassword} = req.body;
+
     const error = validationResult(req);
-    if (!error.isEmpty()) {
-        const msg = error.array().map(err => err.msg)[0];
-        return res.status(422).json({
-          errors: msg
-        });
-      } else {
-        User.findOne({
-            email
-        }).exec((error,user)=>{
-            if(user){
-                return res.status(400).send('Already Registered');
-            }
-        });
-        const user = new User({
-            email:email,
-            fullname:name,
-            password:password
-        })
+
+    User.findOne({email},(err,user)=>{
+        if(err || !user){
+            return res.status(400).json({
+                error: 'User not found'
+            });
+        }
+        if(!user.authenticate(password)){
+            console.log(password);
+            return res.status(401).send("Invalid Password");
+        }
+
+        user.password = newPassword;
 
         user.save((err, user) => {
             if (err) {
@@ -47,12 +44,12 @@ const registerController = (req,res)=>{
                     email: user.email
                 },
                 token: token,
-                message: 'Signup success'
+                message: 'Password updated successfully'
             });
             }
         });
-    }
 
+    })
 }
 
-module.exports = registerController;
+module.exports = changePassword;
